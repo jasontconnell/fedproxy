@@ -15,7 +15,8 @@ Sample config:
         { "extension": "js", "mimeType": "application/javascript" }
     ],
     "localStartPath": "C:\\sites\\exampledev\\"
-}```
+}
+```
 
 Any requests for the extensions in the `intercepts` section of the configuration will be intercepted and will instead be served from the `localStartPath`
 
