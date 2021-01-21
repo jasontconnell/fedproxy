@@ -31,12 +31,13 @@ func main() {
 
 	if *c == "" {
 		flag.PrintDefaults()
-		return
+		os.Exit(1)
 	}
 
 	cfg := conf.LoadConfig(*c)
 	if len(cfg.Intercepts) == 0 || len(cfg.ProxyHost) == 0 {
-
+		log.Println("need intercepts and proxy host to start up")
+		os.Exit(1)
 	}
 
 	if cfg.LocalPort == 0 {
