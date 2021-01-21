@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"io/ioutil"
 	"log"
@@ -36,13 +37,16 @@ func main() {
 
 	cfg := conf.LoadConfig(*c)
 	if len(cfg.Intercepts) == 0 || len(cfg.ProxyHost) == 0 {
-		log.Println("need intercepts and proxy host to start up")
-		os.Exit(1)
+		log.Fatal("need intercepts and proxy host to start up")
 	}
 
 	if cfg.LocalPort == 0 {
 		cfg.LocalPort = 7676
+	}
 
+	var secure bool = cfg.LocalScheme == "https"
+	if secure && (cfg.LocalCrtFile == "" || cfg.LocalKeyFile == "") {
+		log.Fatal("for https locally, you need to supply crt and key files")
 	}
 
 	if !filepath.IsAbs(cfg.LocalStartPath) {
@@ -64,10 +68,15 @@ func main() {
 	for _, v := range cfg.Intercepts {
 		log.Println("intercepting file type", v.Extension, v.MimeType)
 	}
+
 	log.Println("forwarding all other requests to", cfg.ProxyHost)
 
-	url := ":" + strconv.Itoa(cfg.LocalPort)
-	log.Fatal(http.ListenAndServe(url, hnd))
+	url := cfg.LocalHost + ":" + strconv.Itoa(cfg.LocalPort)
+	if !secure {
+		log.Fatal(http.ListenAndServe(url, hnd))
+	} else {
+		log.Fatal(http.ListenAndServeTLS(url, cfg.LocalCrtFile, cfg.LocalKeyFile, hnd))
+	}
 }
 
 func getHandler(cfg conf.Config) handler {
@@ -78,6 +87,12 @@ func getHandler(cfg conf.Config) handler {
 	}
 	h.intercepts = imap
 	return h
+}
+
+func strip(str string, b []byte) []byte {
+	sb := []byte(str)
+	rep := []byte{}
+	return bytes.Replace(b, sb, rep, -1)
 }
 
 func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -102,7 +117,7 @@ func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 	w.WriteHeader(resp.status)
-	w.Write(resp.body)
+	w.Write(strip(h.cfg.ProxyScheme+"://"+h.cfg.ProxyHost, resp.body))
 }
 
 func getLocalContent(local, path, mime string) (response, error) {
