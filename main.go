@@ -31,9 +31,18 @@ func main() {
 
 	if *c == "" {
 		flag.PrintDefaults()
+		return
 	}
 
 	cfg := conf.LoadConfig(*c)
+	if len(cfg.Intercepts) == 0 || len(cfg.ProxyHost) == 0 {
+
+	}
+
+	if cfg.LocalPort == 0 {
+		cfg.LocalPort = 7676
+
+	}
 
 	if !filepath.IsAbs(cfg.LocalStartPath) {
 		wd, _ := os.Getwd()
@@ -47,6 +56,14 @@ func main() {
 
 	fn := getHandler(cfg)
 	hnd := fn
+
+	log.Println("starting fedproxy")
+	log.Println("listening on port", cfg.LocalPort)
+	log.Println("intercepting requests for resources to serve from", cfg.LocalStartPath)
+	for _, v := range cfg.Intercepts {
+		log.Println("intercepting file type", v.Extension, v.MimeType)
+	}
+	log.Println("forwarding all other requests to", cfg.ProxyHost)
 
 	url := ":" + strconv.Itoa(cfg.LocalPort)
 	log.Fatal(http.ListenAndServe(url, hnd))
