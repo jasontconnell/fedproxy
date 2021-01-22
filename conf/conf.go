@@ -15,7 +15,6 @@ type Config struct {
 	RequestHeaders Headers         `json:"requestHeaders"`
 	Intercepts     []InterceptType `json:"intercepts"`
 	LocalStartPath string          `json:"localStartPath"`
-	OverwriteHost  bool            `json:"overwriteHost"`
 }
 
 type InterceptType struct {
@@ -25,9 +24,8 @@ type InterceptType struct {
 
 func LoadConfig(filename string) Config {
 	cfg := Config{
-		ProxyScheme:   "http",
-		LocalScheme:   "http",
-		OverwriteHost: true,
+		ProxyScheme: "http",
+		LocalScheme: "http",
 	}
 
 	conf.LoadConfig(filename, &cfg)

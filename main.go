@@ -59,19 +59,21 @@ func main() {
 		}
 	}
 
-	fn := getHandler(cfg)
-	hnd := fn
+	hnd := getHandler(cfg)
+	url := cfg.LocalHost + ":" + strconv.Itoa(cfg.LocalPort)
+	surl := cfg.LocalScheme + "://" + cfg.LocalHost
+	if cfg.LocalPort != 80 && cfg.LocalPort != 443 {
+		surl += ":" + strconv.Itoa(cfg.LocalPort)
+	}
 
 	log.Println("starting fedproxy")
-	log.Println("listening on port", cfg.LocalPort)
+	log.Println("listening on", surl)
 	log.Println("intercepting requests for resources to serve from", cfg.LocalStartPath)
 	for _, v := range cfg.Intercepts {
 		log.Println("intercepting file type", v.Extension, v.MimeType)
 	}
 
 	log.Println("forwarding all other requests to", cfg.ProxyHost)
-
-	url := cfg.LocalHost + ":" + strconv.Itoa(cfg.LocalPort)
 	if !secure {
 		log.Fatal(http.ListenAndServe(url, hnd))
 	} else {
