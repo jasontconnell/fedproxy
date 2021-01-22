@@ -139,6 +139,7 @@ func getLocalContent(local, path, mime string) (response, error) {
 	r.body = b
 	r.headers = make(http.Header)
 	r.headers["Content-Type"] = []string{mime}
+	r.headers["Cache-Control"] = []string{"no-cache"}
 
 	return r, nil
 }
