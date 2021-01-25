@@ -24,4 +24,4 @@ Sample config:
 
 Any requests for the extensions in the `intercepts` section of the configuration will be intercepted and will instead be served from the `localStartPath`
 
-No caching headers are added to local requests. All headers are carried through for remote requests and responses.
+Cache-Control no-cache is added to local response headers. All headers are carried through for remote requests and responses.
