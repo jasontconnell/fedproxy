@@ -18,6 +18,7 @@ import (
 type handler struct {
 	cfg        conf.Config
 	intercepts map[string]string
+	remoteUrl  string
 }
 
 type response struct {
@@ -37,7 +38,7 @@ func main() {
 
 	cfg := conf.LoadConfig(*c)
 	if len(cfg.Intercepts) == 0 || len(cfg.ProxyHost) == 0 {
-		log.Fatal("need intercepts and proxy host to start up")
+		log.Fatal("need intercepts and proxy host to start up. Sample json: \n", conf.SampleJson)
 	}
 
 	if cfg.LocalPort == 0 {
@@ -88,6 +89,7 @@ func getHandler(cfg conf.Config) handler {
 		imap["."+icp.Extension] = icp.MimeType
 	}
 	h.intercepts = imap
+	h.remoteUrl = cfg.ProxyScheme + "://" + cfg.ProxyHost
 	return h
 }
 
@@ -119,7 +121,7 @@ func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 	w.WriteHeader(resp.status)
-	w.Write(strip(h.cfg.ProxyScheme+"://"+h.cfg.ProxyHost, resp.body))
+	w.Write(strip(h.remoteUrl, resp.body))
 }
 
 func getLocalContent(local, path, mime string) (response, error) {
