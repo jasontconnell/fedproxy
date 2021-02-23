@@ -11,6 +11,7 @@ import (
 	"path"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/jasontconnell/fedproxy/conf"
 )
@@ -78,7 +79,10 @@ func main() {
 	if !secure {
 		log.Fatal(http.ListenAndServe(url, hnd))
 	} else {
-		log.Fatal(http.ListenAndServeTLS(url, cfg.LocalCrtFile, cfg.LocalKeyFile, hnd))
+		home, _ := os.UserHomeDir()
+		crt := strings.Replace(cfg.LocalCrtFile, "$HOME", home, 1)
+		key := strings.Replace(cfg.LocalKeyFile, "$HOME", home, 1)
+		log.Fatal(http.ListenAndServeTLS(url, crt, key, hnd))
 	}
 }
 
